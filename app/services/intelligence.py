@@ -8,7 +8,7 @@ from app.models.schemas import MessageContent
 from app import database  # <--- IMPORTED DATABASE
 
 genai.configure(api_key=settings.GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-2.0-flash') # Updated to latest fast model
+model = genai.GenerativeModel('gemini-3-flash-preview') # Updated to latest fast model
 
 # In-Memory Stats (Kept for speed)
 SESSION_STATS = {}

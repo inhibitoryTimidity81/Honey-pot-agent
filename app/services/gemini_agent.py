@@ -4,7 +4,7 @@ from app.models.schemas import MessageContent
 from typing import List
 
 genai.configure(api_key=settings.GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-2.0-flash') # Updated to latest fast model
+model = genai.GenerativeModel('gemini-3-flash-preview') # Updated to latest fast model
 
 def generate_response(history: List[MessageContent], current_msg_text: str) -> str:
     # Turn the history list into a string script
