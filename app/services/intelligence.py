@@ -5,11 +5,12 @@ import time
 from typing import List
 from app.core.config import settings
 from app.models.schemas import MessageContent
+from app import database  # <--- IMPORTED DATABASE
 
 genai.configure(api_key=settings.GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-3-flash-preview')
+model = genai.GenerativeModel('gemini-2.0-flash') # Updated to latest fast model
 
-# In-Memory Stats
+# In-Memory Stats (Kept for speed)
 SESSION_STATS = {}
 
 SYSTEM_PROMPT = """
@@ -48,7 +49,6 @@ def extract_via_regex(text: str) -> dict:
     link_pattern = r"https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+\S*"
     
     # 4. Bank Account Numbers (Simple check: 9 to 18 digits in a row)
-    # Note: This might pick up random long numbers, but better safe than sorry in a fallback.
     bank_pattern = r"\b\d{9,18}\b"
 
     return {
@@ -94,6 +94,18 @@ def analyze_session(session_id: str, history: List[MessageContent], current_text
             "agent_notes": f"AI unavailable. Data extracted via Regex. Error: {str(e)}",
             "extracted_data": regex_data
         }
+
+    # --- 4. SAVE TO DATABASE (FOR DASHBOARD) ---
+    try:
+        database.update_session(
+            session_id=session_id,
+            msg_count=stats["msg_count"],
+            is_scam=ai_data.get("is_scam", True),
+            extracted_data=ai_data.get("extracted_data", {}),
+            transcript=transcript
+        )
+    except Exception as e:
+        print(f"❌ DB Save Failed: {e}")
 
     return {
         "intelligence": ai_data,
